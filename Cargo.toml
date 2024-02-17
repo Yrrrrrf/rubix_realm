@@ -26,10 +26,11 @@ opt-level = 3  # higher optimization for dependencies (to compensate for the lac
 
 
 [dependencies]
-dev_utils = "0.*"  # many dev utils (https://docs.rs/dev_utils/latest/dev_utils/)
+# dev_utils = "0.*"  # many dev utils (https://docs.rs/dev_utils/latest/dev_utils/)
 log = "0.*"  # logging (https://docs.rs/log/latest/log/)
 env_logger = "0.*"  # logging (https://docs.rs/env_logger/latest/env_logger/)
 wgpu = "0.*"  # wgpu (https://docs.rs/wgpu/latest/wgpu/)
+# toml = "0.*"  # TOML (https://docs.rs/toml/latest/toml/)
 
 pollster = "0.3"
 

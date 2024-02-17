@@ -1,6 +1,5 @@
 <h1 align="center">
-    <!-- <img src="resources/img/hex.gif" alt="Algorithm" width="192"> -->
-    <img src="resources/icons/rubik.png" alt="Algorithm" width="192">
+    <img src="assets/icons/rubik.png" alt="Rubic Cube" width="192">
     <div align="center">Rubix Realm</div>
 </h1>
 

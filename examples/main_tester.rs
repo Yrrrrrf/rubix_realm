@@ -5,12 +5,9 @@
 #![allow(unused_variables)]
 
 
-use rubix_realm::render::{
-    window::init_window,
-    cube::*,
-};
+use rubix_realm::render::setup::init_window;
 
 
 fn main() {
-    if let Err(e) = init_window() {eprintln!("Error: {}", e);}
+    if let Err(e) =  pollster::block_on(init_window()) {eprintln!("Error: {}", e);}
 }
