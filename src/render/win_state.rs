@@ -29,8 +29,10 @@ impl<'a> State<'a> {
         let (surface, device, queue, config, size) = surface::create_surface(window).await;
         // Load the shader module from the Wgsl source
         let shader_module = device.create_shader_module(
+            // todo: change this path to be readed from a file
+            // wgpu::include_wgsl!("../../assets/shaders/shader.wgsl")
             wgpu::include_wgsl!("../../assets/shaders/triangle.wgsl")
-            // wgpu::include_wgsl!("../assets/shaders/shader.wgsl")
+            // wgpu::include_wgsl!("../../assets/shaders/square.wgsl")
         );
         let render_pipeline = pipeline::set_pipeline(&device, &config, shader_module);
         let clear_color = wgpu::Color::BLACK;
@@ -65,9 +67,11 @@ impl<'a> State<'a> {
         match event {
             WindowEvent::CursorMoved { position, .. } => {
                 self.clear_color = wgpu::Color {
-                    r: position.x as f64 / self.size.width as f64,
-                    g: position.y as f64 / self.size.height as f64,
-                    b: 1.0,
+                    // r: position.x as f64 / self.size.width as f64,
+                    // g: position.y as f64 / self.size.height as f64,
+                    r: 0.3,
+                    g: 0.3,
+                    b: 0.3,
                     a: 1.0,
                 };
                 true
@@ -94,8 +98,17 @@ impl<'a> State<'a> {
                 color_attachments: &[Some(wgpu::RenderPassColorAttachment {
                     view: &view,
                     resolve_target: None,
+                    // ops: wgpu::Operations {
+                    //     load: wgpu::LoadOp::Clear(self.clear_color),
+                    //     store: wgpu::StoreOp::Store,
+                    // },
                     ops: wgpu::Operations {
-                        load: wgpu::LoadOp::Clear(self.clear_color),
+                        load: wgpu::LoadOp::Clear(wgpu::Color {
+                            r: 0.1,
+                            g: 0.2,
+                            b: 0.3,
+                            a: 1.0,
+                        }),
                         store: wgpu::StoreOp::Store,
                     },
                 })],
@@ -104,8 +117,9 @@ impl<'a> State<'a> {
                 timestamp_writes: None,
             });
         
-            render_pass.set_pipeline(&self.render_pipeline); // 2.
-            render_pass.draw(0..3, 0..1); // 3.
+            render_pass.set_pipeline(&self.render_pipeline);
+            // render_pass.draw(0..3, 0..1);
+            render_pass.draw(0..10, 0..10);
         }
 
         self.queue.submit(iter::once(encoder.finish()));
@@ -114,38 +128,3 @@ impl<'a> State<'a> {
         Ok(())
     }
 }
-
-// event_loop.run(move |event, elwt| {
-//     if let Event::WindowEvent { event, .. } = event {
-//         match event {
-//             // * Interacting with the window
-//             WindowEvent::CloseRequested => elwt.exit(),
-//             WindowEvent::KeyboardInput { event, .. } => handle_input(&event, &mut modifiers, &elwt),
-//             WindowEvent::ModifiersChanged(new) => modifiers = new.state(),
-//             // * Updating the window (resizing, redrawing, etc.)
-//             WindowEvent::Resized(physical_size) => state.resize(physical_size),
-//             WindowEvent::RedrawRequested => {
-//                 // This tells winit that we want another frame after this one
-//                 state.window().request_redraw();
-//                 state.update();
-//                 match state.render() {
-//                     Ok(_) => {}
-//                     // Reconfigure the surface if it's lost or outdated
-//                     Err(wgpu::SurfaceError::Lost | wgpu::SurfaceError::Outdated) => {
-//                         state.resize(state.size)
-//                     }
-//                     // The system is out of memory, we should probably quit
-//                     Err(wgpu::SurfaceError::OutOfMemory) => {
-//                         log::error!("OutOfMemory");
-//                         elwt.exit();
-//                     }
-
-//                     // This happens when the a frame takes too long to present
-//                     Err(wgpu::SurfaceError::Timeout) => log::warn!("Surface timeout"),
-//                 }
-//             }
-//             _ => (),
-//         }
-
-//     }
-// })

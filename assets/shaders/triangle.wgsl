@@ -1,7 +1,9 @@
+// ColorfulTriangle
 struct VOutput{   
     @location(0) v_color: vec4<f32>,
     @builtin(position) position: vec4<f32>,
 };
+
 
 @vertex
 fn vs_main(@builtin(vertex_index) in_vertex_index: u32) -> VOutput {    
@@ -21,6 +23,7 @@ fn vs_main(@builtin(vertex_index) in_vertex_index: u32) -> VOutput {
     out.v_color = vec4<f32>(color[in_vertex_index], 1.0);
     return out;
 }
+
 
 @fragment
 fn fs_main(in: VOutput) -> @location(0) vec4<f32> {
