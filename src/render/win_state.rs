@@ -67,10 +67,8 @@ impl<'a> State<'a> {
         match event {
             WindowEvent::CursorMoved { position, .. } => {
                 self.clear_color = wgpu::Color {
-                    // r: position.x as f64 / self.size.width as f64,
-                    // g: position.y as f64 / self.size.height as f64,
-                    r: 0.3,
-                    g: 0.3,
+                    r: position.x as f64 / self.size.width as f64,
+                    g: position.y as f64 / self.size.height as f64,
                     b: 0.3,
                     a: 1.0,
                 };
