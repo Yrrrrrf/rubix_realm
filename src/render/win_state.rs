@@ -31,11 +31,11 @@ impl<'a> State<'a> {
         let shader_module = device.create_shader_module(
             // todo: change this path to be readed from a file
             // wgpu::include_wgsl!("../../assets/shaders/shader.wgsl")
-            wgpu::include_wgsl!("../../assets/shaders/triangle.wgsl")
-            // wgpu::include_wgsl!("../../assets/shaders/square.wgsl")
+            // wgpu::include_wgsl!("../../assets/shaders/triangle.wgsl")
+            wgpu::include_wgsl!("../../assets/shaders/square.wgsl")
         );
         let render_pipeline = pipeline::set_pipeline(&device, &config, shader_module);
-        let clear_color = wgpu::Color::BLACK;
+        let clear_color = wgpu::Color::BLUE;
 
         Self {
             surface,
@@ -65,15 +65,15 @@ impl<'a> State<'a> {
     #[allow(unused_variables)]
     pub fn input(&mut self, event: &WindowEvent) -> bool {
         match event {
-            WindowEvent::CursorMoved { position, .. } => {
-                self.clear_color = wgpu::Color {
-                    r: position.x as f64 / self.size.width as f64,
-                    g: position.y as f64 / self.size.height as f64,
-                    b: 0.3,
-                    a: 1.0,
-                };
-                true
-            }
+            // WindowEvent::CursorMoved { position, .. } => {
+            //     self.clear_color = wgpu::Color {
+            //         r: position.x as f64 / self.size.width as f64,
+            //         g: position.y as f64 / self.size.height as f64,
+            //         b: 1.0,
+            //         a: 1.0,
+            //     };
+            //     true
+            // }
             _ => false,
         }
     }
@@ -96,19 +96,19 @@ impl<'a> State<'a> {
                 color_attachments: &[Some(wgpu::RenderPassColorAttachment {
                     view: &view,
                     resolve_target: None,
-                    // ops: wgpu::Operations {
-                    //     load: wgpu::LoadOp::Clear(self.clear_color),
-                    //     store: wgpu::StoreOp::Store,
-                    // },
                     ops: wgpu::Operations {
-                        load: wgpu::LoadOp::Clear(wgpu::Color {
-                            r: 0.1,
-                            g: 0.2,
-                            b: 0.3,
-                            a: 1.0,
-                        }),
+                        load: wgpu::LoadOp::Clear(self.clear_color),
                         store: wgpu::StoreOp::Store,
                     },
+                    // ops: wgpu::Operations {
+                    //     load: wgpu::LoadOp::Clear(wgpu::Color {
+                    //         r: 0.1,
+                    //         g: 0.2,
+                    //         b: 0.3,
+                    //         a: 1.0,
+                    //     }),
+                    //     store: wgpu::StoreOp::Store,
+                    // },
                 })],
                 depth_stencil_attachment: None,
                 occlusion_query_set: None,
@@ -116,8 +116,8 @@ impl<'a> State<'a> {
             });
         
             render_pass.set_pipeline(&self.render_pipeline);
-            // render_pass.draw(0..3, 0..1);
-            render_pass.draw(0..10, 0..10);
+            render_pass.draw(0..3, 0..1);
+            // render_pass.draw(0..10, 0..10);
         }
 
         self.queue.submit(iter::once(encoder.finish()));
