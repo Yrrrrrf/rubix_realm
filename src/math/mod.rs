@@ -1,15 +1,11 @@
 mod matrix;
+mod point;
+
 // reimport the matrix module to avoid the need to use the full path
+pub use point::Point;
 pub use matrix::Matrix;
-
 pub mod polynomial_eval;
-
-
-
-
-
-
-
+pub mod bezier;
 
 
 // todo: add a "Numerical Analysis" module

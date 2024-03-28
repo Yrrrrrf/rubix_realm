@@ -112,7 +112,6 @@ impl Matrix {
     // pub fn is_invertible(&self) -> bool {}  // A matrix is invertible if its determinant is non-zero
 }
 
-
 impl fmt::Display for Matrix {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         for row in &self.data {
@@ -172,13 +171,12 @@ impl Mul for Matrix {
     fn mul(self, rhs: Matrix) -> Self {
         assert_eq!(self.data[0].len(), rhs.data.len(), "Incompatible dimensions for matrix multiplication");
         
-        let rhs_cols = rhs.data.get(0).expect("rhs matrix is empty").len();
         Matrix::new(
             // todo: Use the Volker Strassen method to multiply the matrices. O(n^2.81)
             // todo: Implement the Coppersmith-Winograd algorithm. O(n^2.376)
             // * there's also the AlphaTensor algorithm. But I don't know the complexity of it
             (0..self.data.len()).map(|r| {  // For each row in self
-                (0..rhs_cols).map(|rc| {  // For each column in rhs
+                (0..rhs.data.get(0).expect("rhs matrix is empty").len()).map(|rc| {  // For each column in rhs
                     self.data[r].iter().zip(rhs.data.iter().map(|row| row[rc]))  // Zip the row of self with the column of rhs
                         .map(|(a, b)| a * b).sum()  // Multiply and sum the products
                 }).collect()  // Collect the products into a new row
@@ -263,9 +261,9 @@ impl Div<f64> for Matrix {
 // the b3 matrix is defined as:
 fn b3_matrix() -> Matrix {
     Matrix::new(vec![
-        vec![-1.0, 3.0, -3.0, 1.0],
-        vec![3.0, -6.0, 3.0, 0.0],
-        vec![-3.0, 3.0, 0.0, 0.0],
-        vec![1.0, 0.0, 0.0, 0.0]
+        vec![-1.0,  3.0, -3.0, 1.0],
+        vec![ 3.0, -6.0,  3.0, 0.0],
+        vec![-3.0,  3.0,  0.0, 0.0],
+        vec![ 1.0,  0.0,  0.0, 0.0]
     ])
 }

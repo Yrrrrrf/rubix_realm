@@ -2,122 +2,93 @@
 
 
 // ? Library metadata -------------------------------------------------------------------------
-// * External crates used in the library
-#[cfg(feature = "3d_render")]
-extern crate winit;
-#[cfg(feature = "3d_render")]
-extern crate image;
+use nannou::{image, prelude::*, winit::window::Icon};
 
-// * Modules used in the library
-pub mod render;
-
+pub mod n_test;  // & nannou: library for creative coding in Rust
+// pub mod util;  // for now just contains `lorem ipsum` text generator
 pub mod math;
+pub mod geometry;
+
+use math::bezier::*;
 
 
 // ? General library functionalities ----------------------------------------------------------
-// pub fn general_functionality() {
-//     // Code for general functionality of your library
-// }
-
-// #[cfg(feature = "3d_render")]
-// pub fn render_specific_functionality() {
-//     // Code specific to 3D rendering feature
-// }
 
 
+pub fn init_window() {
+    nannou::app(model)
+        .update(update)  // Update the model here...<every frame>
+        .event(event)  // Handle events
+        .simple_window(view)  // Draw the model
+        .run();
+}
 
 
 
-use std::path::Path;
 
-use render::{
-    input::*,
-    win_state::State,
-};
+pub struct Model {
+    // This will now represent the start point for the next line
+    line_start_pos: Point2,
+    b_lines: Vec<(Point2, Point2)>, // Each line is represented as a pair of start and end points
+}
 
-use winit::{
-    dpi::LogicalSize,
-    event_loop::EventLoop,
-    keyboard::ModifiersState,
-    event::{
-        Event, 
-        WindowEvent,
-    },
-    window::{
-        Icon, 
-        WindowBuilder
+fn model(app: &App) -> Model {
+    // * Set the window properties
+    app.main_window().set_min_inner_size_points(Some((720.0, 480.0)));
+    app.main_window().set_inner_size_pixels(1920, 1080);
+    // app.main_window().set_inner_size_pixels(1080, 720);
+    app.main_window().set_title("Rubix Realm");
+    app.main_window().set_window_icon(
+        Some(load_icon("./assets/icons/rubik.png").expect("Failed to load window icon"))
+    );
+
+    // * Initialize the model
+    Model { 
+        line_start_pos: app.window_rect().xy(),
+        b_lines: Vec::new(), // Initialize the lines vector
     }
-};
+}
 
-use wgpu::SurfaceError::*;
+fn update(_app: &App, _model: &mut Model, _update: Update) {
+    // _app.main_window().set_title(&format!("Drawing Lines - {:.0} fps", _app.fps()));
+    // do something similar as above, but this time just add the fps to the title instead of the whole string
+    _app.main_window().set_title(&format!("{:.0} fps", _app.fps()));
+}
 
+fn event(app: &App, model: &mut Model, event: Event) {
+    match event {
+        Event::WindowEvent { simple: Some(MousePressed(_)), .. } => {
+            let mouse_pos = app.mouse.position();
+            model.b_lines.push((model.line_start_pos, mouse_pos));
+            // println!("{:?}", model.b_lines);
+            model.line_start_pos = mouse_pos;
+        },
+        // Event::WindowEvent { simple: Some(MouseMoved(_)), .. } => {
+        //     println!("Mouse moved to: {:?}", app.mouse.position());
+        // },
+        _ => {}
+    }
+}
 
-// State::new uses async code, so we're going to wait for it to finish
-pub async fn init_window() -> Result<(), impl std::error::Error> {
-    env_logger::init();
- 
-    let event_loop = EventLoop::new()?;
+/// View function that 
+fn view(app: &App, model: &Model, frame: Frame) {
+    let draw = app.draw();
+    draw.background().color(BLACK); // Clear the background to remove previous drawings
 
-    // ^ Move the path to a separate file like "Constants.rs" or "Config.toml" or something like that
-    let icon = load_icon(Path::new("./assets/icons/rubik.png"));
-    let mut modifiers = ModifiersState::default();
-   
-    let window = WindowBuilder::new()
-        .with_title("An iconic window!")
-        .with_window_icon(Some(icon))
-        .with_inner_size(LogicalSize::new(1080, 720))
-        .with_min_inner_size(LogicalSize::new( 720,  480))
-        .with_max_inner_size(LogicalSize::new(1920, 1080))
-        .build(&event_loop)?;
+    // Draw all lines that have been added to the model.lines vector.
+    // model.b_lines.iter().for_each(|line| {draw.line().start(line.0).end(line.1).weight(2.0).rgb(1.0, 0.0, 0.0);});
+    // Draw the current (dynamic) line that follows the mouse
+    // draw.line().start(model.line_start_pos).end(app.mouse.position()).weight(2.0).rgb(0.5, 0.5, 0.5);
 
-    // let mut state = State::new(&window).await;
+    bezier(&app, &model, &frame);
 
-    event_loop.run(move |event, elwt| {
-        if let Event::WindowEvent { event, .. } = event {
-            match event {
-                // * Interacting with the window
-                WindowEvent::CloseRequested => elwt.exit(),
-                WindowEvent::KeyboardInput { event, .. } => handle_keyboard_input(&event, &mut modifiers, &elwt),
-                WindowEvent::MouseInput { state, button, .. } => handle_mouse_input(&state, &button, &elwt),
-                // WindowEvent::MouseWheel { delta, .. } => handle_mouse_wheel(&delta, &elwt),  
-                WindowEvent::CursorMoved { position, .. } => {
-                    handle_cursor_moved(&position, &elwt);
-                    // state.input(&event);
-                },
-
-                // // * Modifiers (shift, ctrl, alt, etc.)
-                // WindowEvent::ModifiersChanged(new) => modifiers = new.state(),
-
-                // // * Updating the window (resizing, redrawing, etc.)
-                // WindowEvent::Resized(physical_size) => state.resize(physical_size),
-                // WindowEvent::RedrawRequested => {
-                //     state.window().request_redraw();
-                //     state.update();
-                //     if let Err(surface_error) = state.render() {  // Do something with the error, else it will be ignored
-                //         match surface_error {
-                //             Lost | Outdated => state.resize(state.size),
-                //             OutOfMemory => {log::error!("OutOfMemory"); elwt.exit();}
-                //             Timeout => log::warn!("Surface timeout"),
-                //         }
-                //     }
-                // },
-                _ => (),
-            }
-
-        }
-    })
+    // Write the result of our drawing to the window's frame.
+    draw.to_frame(app, &frame).unwrap();  //* Draw all the elements above to the frame...
 }
 
 
-fn load_icon(path: &Path) -> Icon {
-    let (icon_rgba, icon_width, icon_height) = {
-        let image = image::open(path)
-            .expect("Failed to open icon path")
-            .into_rgba8();
-        let (width, height) = image.dimensions();
-        let rgba = image.into_raw();
-        (rgba, width, height)
-    };
-    Icon::from_rgba(icon_rgba, icon_width, icon_height).expect("Failed to open icon")
+fn load_icon(icon_path: &str) -> Result<Icon, Box<dyn std::error::Error>> {
+    let image_data = image::open(icon_path)?.to_rgba8();
+    let (width, height) = image_data.dimensions();
+    Ok(Icon::from_rgba(image_data.into_raw(), width, height).unwrap())
 }
-
