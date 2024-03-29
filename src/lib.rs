@@ -50,8 +50,6 @@ fn model(app: &App) -> Model {
 }
 
 fn update(_app: &App, _model: &mut Model, _update: Update) {
-    // _app.main_window().set_title(&format!("Drawing Lines - {:.0} fps", _app.fps()));
-    // do something similar as above, but this time just add the fps to the title instead of the whole string
     _app.main_window().set_title(&format!("{:.0} fps", _app.fps()));
 }
 

@@ -259,7 +259,7 @@ impl Div<f64> for Matrix {
 //     where C(n, k) is the binomial coefficient
 //     * C(n, k) = n! / (k! * (n - k)!)
 // the b3 matrix is defined as:
-fn b3_matrix() -> Matrix {
+pub fn b3_matrix() -> Matrix {
     Matrix::new(vec![
         vec![-1.0,  3.0, -3.0, 1.0],
         vec![ 3.0, -6.0,  3.0, 0.0],
