@@ -19,16 +19,15 @@ pub fn bezier(app: &App, model: &Model, frame: &Frame) {
         Point2::new( 200.0,   0.0),  // Final point
     ];  // Points for a Cubic Bezier curve (most common)
 
-
     draw_points(&draw, &control_points);  // Draw the control points
     draw_conn_lines(&draw, &control_points);
 
-    let t = 0.5;  // Time variable for the Bezier curve
-    bezier_matrix_form(t, &control_points);
+    let fragments: usize = 100;  // Number of fragments to draw the curve
+    (0..=fragments).map(|t| t as f32 / fragments as f32).for_each(|t| {
+        draw.ellipse().xy(bezier_matrix_form(t, &control_points)).radius(2.0).color(BLUE);
+    });
 
 }
-
-
 
 
 fn draw_points(draw: &Draw, points: &Vec<Point2>) {
@@ -52,7 +51,7 @@ fn bezier_matrix_form(t: f32, points: &Vec<Point2>) -> Point2 {
     // Create a matrix with the control points
     let t_vec = Matrix::new(vec![
         vec![t.powi(3) as f64, t.powi(2) as f64, t as f64, 1.0]
-    ]);
+    ]); 
     // todo: Look for a way to create the t_vec matrix without hardcoding the values (use a loop or iterator)
     // Check this code snippet: (fix it and use it to create the t_vec matrix)
     // let t_vec = Matrix::new(
@@ -72,11 +71,12 @@ fn bezier_matrix_form(t: f32, points: &Vec<Point2>) -> Point2 {
     let x = bezier_matrix.clone() * Matrix::new(vec![x_val]).transpose();
     let y = bezier_matrix.clone() * Matrix::new(vec![y_val]).transpose();
 
-
-
     println!("Bezier matrix: {:?}", bezier_matrix);
     println!("x: {:?}", x);
     println!("y: {:?}", y);
 
-    Point2::new(0.0, 0.0)
+
+
+    Point2::new(x.data[0][0] as f32, y.data[0][0] as f32)  // Return the point [x, y
+
 }

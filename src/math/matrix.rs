@@ -12,7 +12,7 @@ use std::fmt;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Matrix {
-    data: Vec<Vec<f64>>,
+    pub data: Vec<Vec<f64>>,
 }
 
 impl Matrix {
