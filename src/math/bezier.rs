@@ -8,75 +8,50 @@ use crate::Model;
 
 use super::matrix::*;
 
-pub fn bezier(app: &App, model: &Model, frame: &Frame) {
-    let draw = app.draw();  // Create a new draw object
+pub fn bezier(draw: &nannou::draw::Draw, model: &Model, control_points: &Vec<Point2>) {
+    // let draw = app.draw();  // Create a new draw object
 
-    // Define the control points of the Bezier curve
-    let control_points = vec![
-        Point2::new(-200.0,   0.0),  // Initial point
-        Point2::new(-100.0, 200.0),  // Control point 1
-        Point2::new( 100.0, 200.0),  // Control point 2
-        Point2::new( 200.0,   0.0),  // Final point
-    ];  // Points for a Cubic Bezier curve (most common)
+    // draw_points(&draw, &control_points);  // Draw the control points
+    // draw_conn_lines(&draw, &control_points);
 
-    draw_points(&draw, &control_points);  // Draw the control points
-    draw_conn_lines(&draw, &control_points);
+    // println!("Control points: {:#?}", control_points);
 
-    let fragments: usize = 100;  // Number of fragments to draw the curve
+    let fragments: usize =  // Number of fragments to draw the curve
+    // 20
+    100
+    ;
+    
     (0..=fragments).map(|t| t as f32 / fragments as f32).for_each(|t| {
-        draw.ellipse().xy(bezier_matrix_form(t, &control_points)).radius(2.0).color(BLUE);
+        draw.ellipse().xy(bezier_at(t, &control_points)).radius(1.0).color(GREENYELLOW);
     });
 
+
+    draw.ellipse().xy(bezier_at(0.0, &control_points)).radius(10.0).color(GREENYELLOW);  // draw the first point
+    // draw.ellipse().xy(bezier_at(t, &control_points)).radius(1.0).color(GREENYELLOW);
 }
-
-
-fn draw_points(draw: &Draw, points: &Vec<Point2>) {
-    points.iter().for_each(|point| {draw.ellipse().xy(*point).radius(5.0).color(RED);});
-}
-
-fn draw_conn_lines(draw: &Draw, points: &Vec<Point2>) {
-    (0..points.len()-1).for_each(|i| {
-        draw.line().start(points[i]).end(points[i+1]).weight(2.0).color(WHITE);
-    });
-}
-
 
 // * where `t` is the time variable that goes from 0 to 1
-fn bezier_matrix_form(t: f32, points: &Vec<Point2>) -> Point2 {
+fn bezier_at(t: f32, points: &Vec<Point2>) -> Point2 {
     // Validate the input
     assert!(t >= 0.0 && t <= 1.0, "The time variable `t` must be between 0 and 1");
     assert!(points.len() == 4, "The Cubic Bezier curve requires 4 control points");
 
-
     // Create a matrix with the control points
     let t_vec = Matrix::new(vec![
+        // (3..=0).map(|n| t.powi(n as i32) as f64).collect::<Vec<f64>>()
         vec![t.powi(3) as f64, t.powi(2) as f64, t as f64, 1.0]
-    ]); 
-    // todo: Look for a way to create the t_vec matrix without hardcoding the values (use a loop or iterator)
-    // Check this code snippet: (fix it and use it to create the t_vec matrix)
-    // let t_vec = Matrix::new(
-    //     (3..=0).map(|i| t.powi(i) as f64).collect::<Vec<f64>()
-    // );
+    ]);
 
-    let mat_form: Matrix = b3_matrix();
-
-    let bezier_matrix = t_vec * mat_form;
+    // Create the bezier matrix
+    let bezier_matrix = t_vec * b3_matrix();  // Multiply the t vector by the bezier matrix
 
     // multiply the bezier matrix by the control points matrix
-    // get the x values of the points
     let x_val: Vec<f64> = points.iter().map(|point| point.x as f64).collect();
-    // get the y values of the points
     let y_val: Vec<f64> = points.iter().map(|point| point.y as f64).collect();
 
+    // Calculate the x and y values
     let x = bezier_matrix.clone() * Matrix::new(vec![x_val]).transpose();
     let y = bezier_matrix.clone() * Matrix::new(vec![y_val]).transpose();
 
-    println!("Bezier matrix: {:?}", bezier_matrix);
-    println!("x: {:?}", x);
-    println!("y: {:?}", y);
-
-
-
     Point2::new(x.data[0][0] as f32, y.data[0][0] as f32)  // Return the point [x, y
-
 }

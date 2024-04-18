@@ -126,7 +126,6 @@ impl fmt::Display for Matrix {
     }
 }
 
-
 impl Add for Matrix {
     type Output = Self;
 
@@ -219,6 +218,7 @@ impl MulAssign for Matrix {
 //     }
 // }
 
+
 // impl Maxtrix * f64
 impl Mul<f64> for Matrix {
     type Output = Matrix;
@@ -249,6 +249,7 @@ impl Div<f64> for Matrix {
 
 
 // ? ------------------------------ Some ------------------------------ ? //
+
 
 // create a type of matrix: The Bezier matrix
 // * The Bezier matrix is a matrix that is used to calculate the Bezier curve
