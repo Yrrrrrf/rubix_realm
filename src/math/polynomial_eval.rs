@@ -25,7 +25,6 @@ fn bernstein(n: usize, i: usize, t: f64) -> f64 {
     coeff * binomial_coeff(n, i) as f64
 }
 
-// Binomial coefficient helper function
 fn binomial_coeff(n: usize, k: usize) -> usize {
     let mut res = 1;
     for i in 0..k {
