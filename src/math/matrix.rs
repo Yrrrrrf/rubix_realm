@@ -10,7 +10,7 @@ use std::ops::{Add, AddAssign, Div, Mul, MulAssign, Neg, Sub, SubAssign};
 use std::fmt;
 
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq)] 
 pub struct Matrix {
     pub data: Vec<Vec<f64>>,
 }

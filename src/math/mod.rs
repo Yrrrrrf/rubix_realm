@@ -1,6 +1,10 @@
 mod matrix;
 mod point;
 
+
+
+pub mod surface;
+
 // reimport the matrix module to avoid the need to use the full path
 pub use point::Point;
 pub use matrix::Matrix;

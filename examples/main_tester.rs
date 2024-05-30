@@ -12,10 +12,11 @@ use log::{info, LevelFilter};
 
 use rubix_realm::{
     init_window,
+    math::polynomial_eval::*,
     math::{
         Matrix,
         Point,
-        polynomial_eval::*,
+        surface::*,
     },
 };
 
