@@ -1,47 +1,88 @@
-// #![allow(unused)]
+#![allow(unused)]
 
+#[derive(Debug, Clone, Copy)]
+pub struct Point {
+    x: f64,
+    y: f64,
+    z: f64,
+}
 
-use nannou::prelude::*;
-use nannou::geom::Point2;
+impl Point {
+    fn lerp(p1: &Point, p2: &Point, t: f64) -> Point {
+        Point {
+            x: p1.x + (p2.x - p1.x) * t,
+            y: p1.y + (p2.y - p1.y) * t,
+            z: p1.z + (p2.z - p1.z) * t,
+        }
+    }
+}
 
-use crate::Model;
+pub fn bezier_surface(control_points: &Vec<Vec<Point>>, u: f64, v: f64) -> Point {
+    let mut temp_points = control_points.clone();
+    let n = temp_points.len();
+    let m = temp_points[0].len();
 
-use super::matrix::*;
+    for _ in 0..n {
+        for i in 0..(n - 1) {
+            for j in 0..m {
+                temp_points[i][j] = Point::lerp(&temp_points[i][j], &temp_points[i + 1][j], u);
+            }
+        }
+        temp_points.pop();
+    }
 
+    for _ in 0..m {
+        for i in 0..(n - 1) {
+            for j in 0..(m - 1) {
+                temp_points[i][j] = Point::lerp(&temp_points[i][j], &temp_points[i][j + 1], v);
+            }
+        }
+        for row in temp_points.iter_mut() {
+            row.pop();
+        }
+    }
 
-pub fn bezier_surface_at(u: f32, v: f32, control_points: &Vec<Vec<Point2>>) -> Point2 {
-    // Validate the input
-    assert!(u >= 0.0 && u <= 1.0, "The parameter `u` must be between 0 and 1");
-    assert!(v >= 0.0 && v <= 1.0, "The parameter `v` must be between 0 and 1");
-    // assert!(control_points.len() == 4 && control_points[0].len() == 4, "The Cubic Bezier surface requires a 4x4 grid of control points");
+    temp_points[0][0]
+}
 
-    // Create a matrix with the u and v parameters
-    let u_vec = Matrix::new(vec![
-        vec![u.powi(3) as f64, u.powi(2) as f64, u as f64, 1.0]
-    ]);
-    let v_vec = Matrix::new(vec![
-        vec![v.powi(3) as f64, v.powi(2) as f64, v as f64, 1.0]
-    ]);
+pub fn nurbs_surface(control_points: &Vec<Vec<Point>>, weights: &Vec<Vec<f64>>, u: f64, v: f64) -> Point {
+    let n = control_points.len() - 1;
+    let m = control_points[0].len() - 1;
 
-    // Create the bezier matrix
-    let bezier_matrix_u = u_vec * b3_matrix();
-    let bezier_matrix_v = v_vec * b3_matrix();
+    let mut numerator = Point { x: 0.0, y: 0.0, z: 0.0 };
+    let mut denominator = 0.0;
 
-    // Multiply the bezier matrix by the control points matrix
-    let x_vals: Vec<Vec<f64>> = control_points.iter().map(|row| {
-        row.iter().map(|point| point.x as f64).collect()
-    }).collect();
-    let y_vals: Vec<Vec<f64>> = control_points.iter().map(|row| {
-        row.iter().map(|point| point.y as f64).collect()
-    }).collect();
+    for i in 0..=n {
+        for j in 0..=m {
+            let basis_u = bernstein(n, i, u);
+            let basis_v = bernstein(m, j, v);
+            let weight = weights[i][j];
 
-    // Convert control point matrices to Matrix type
-    let x_matrix = Matrix::new(x_vals);
-    let y_matrix = Matrix::new(y_vals);
+            numerator.x += basis_u * basis_v * weight * control_points[i][j].x;
+            numerator.y += basis_u * basis_v * weight * control_points[i][j].y;
+            numerator.z += basis_u * basis_v * weight * control_points[i][j].z;
 
-    // Calculate the x and y values
-    let x = bezier_matrix_u.clone() * x_matrix * bezier_matrix_v.transpose();
-    let y = bezier_matrix_u * y_matrix * bezier_matrix_v.transpose();
+            denominator += basis_u * basis_v * weight;
+        }
+    }
 
-    Point2::new(x.data[0][0] as f32, y.data[0][0] as f32)  // Return the point [x, y]
+    Point {
+        x: numerator.x / denominator,
+        y: numerator.y / denominator,
+        z: numerator.z / denominator,
+    }
+}
+
+fn bernstein(n: usize, i: usize, t: f64) -> f64 {
+    let binom = binomial_coeff(n, i);
+    binom as f64 * t.powi(i as i32) * (1.0 - t).powi((n - i) as i32)
+}
+
+fn binomial_coeff(n: usize, k: usize) -> usize {
+    let mut res = 1;
+    for i in 0..k {
+        res *= n - i;
+        res /= i + 1;
+    }
+    res
 }

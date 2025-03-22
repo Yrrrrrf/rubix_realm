@@ -41,7 +41,7 @@ impl Hypercube {
         let num_vertices = 2usize.pow(self.dims);
         let mut vertices = Vec::with_capacity(num_vertices);
 
-        // do the same as above using an anonymous function
+        // do the same as above using a=n anonymous function
         (0..num_vertices).for_each(|i| vertices.push(
             (0..self.dims).map(|j| if (i >> j) & 1 == 1 { self.side_length } else { 0.0 }).collect()
         ));

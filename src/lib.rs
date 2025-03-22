@@ -8,6 +8,7 @@ pub mod n_test;  // & nannou: library for creative coding in Rust
 // pub mod util;  // for now just contains `lorem ipsum` text generator
 pub mod math;
 pub mod geometry;
+pub mod cube;
 
 use math::bezier::*;
 use math::surface::*;
@@ -27,9 +28,9 @@ pub fn init_window() {
 
 pub struct Model {
     // line_start_pos:Point2,  // The starting position of the line
-    b_lines: Vec<(Point2, Point2)>, // Each line is represented as a pair of start and end points
-    points: Vec<Point2>, // Stores the points added by mouse clicks
-    control_points: Vec<Vec<(f32, f32)>>,  // Stores the control points for the Bezier curve
+    // b_lines: Vec<(Point2, Point2)>, // Each line is represented as a pair of start and end points
+    points: Vec<Point3>, // Stores the points added by mouse clicks
+    control_points: Vec<Point3>,  // Stores the control points for the Bezier curve
 }
 
 fn model(app: &App) -> Model {
@@ -44,24 +45,28 @@ fn model(app: &App) -> Model {
 
 
     let scale = 300.0;
-    let mut control_points = vec![vec![
-        (-1.0, -1.0),  // 0 
-        (-1.0,  1.0),  // 1
-        ( 1.0,  1.0),  // 3
-        ( 1.0, -1.0),  // 2
-    ]];
+
+    // Define the cube's corner points
+    let mut control_points = vec![
+        Vec3::new(-1.0, -1.0, -1.0), // 0 (bottom, back, left)
+        Vec3::new(-1.0,  1.0, -1.0), // 1 (top, back, left)
+        Vec3::new( 1.0,  1.0, -1.0), // 2 (top, back, right)
+        Vec3::new( 1.0, -1.0, -1.0), // 3 (bottom, back, right)
+        Vec3::new(-1.0, -1.0,  1.0), // 4 (bottom, front, left)
+        Vec3::new(-1.0,  1.0,  1.0), // 5 (top, front, left)
+        Vec3::new( 1.0,  1.0,  1.0), // 6 (top, front, right)
+        Vec3::new( 1.0, -1.0,  1.0), // 7 (bottom, front, right)
+    ];
     // now scale the control points
     control_points.iter_mut().for_each(|row| {
-        row.iter_mut().for_each(|(x, y)| {
-            *x *= scale;
-            *y *= scale;
-        });
+        *row *= scale;
     });
+
 
     // * Initialize the model
     Model {
         // line_start_pos: app.window_rect().xy(),
-        b_lines: Vec::new(),  // Initialize the lines vector
+        // b_lines: Vec::new(),  // Initialize the lines vector
         points: Vec::new(), // Initialize the points vector
         // control_points: Vec::new(),  // Initialize the control points vector
         control_points,
@@ -93,39 +98,22 @@ fn view(app: &App, model: &Model, frame: Frame) {
     let draw = app.draw();
     draw.background().color(BLACK); // Clear the background to remove previous drawings
 
-    // // Draw the Bezier curve
-    // // Only if there are 4 points.. Or more.
-    // // Like 4 + 3n points
-    // // This to draw a continuous curve
-    // // 4 for the first curve
-    // // 3 for the next curve (last point of the previous curve is the first point of the next curve)
-    //     // 1 last point
-    //     // +2 control points
-    //     // +1 last point (will be used as the first point of the next curve)
-    // if model.points.len() >= 4 {
-    //     let mut start_index = 0;
-    //     let mut end_index = 3;
+    // * Draw Edges
+    let edges = vec![
+        (0, 1), (1, 2), (2, 3), (3, 0),  // back face
+        (4, 5), (5, 6), (6, 7), (7, 4),  // front face
+        (0, 4), (1, 5), (2, 6), (3, 7),  // connecting edges
+    ];
 
-    //     while end_index < model.points.len() {
-    //         // println!("Start index: {}, End index: {}", start_index, end_index);  // Debugging print statement
-    //         let control_points = &model.points[start_index..=end_index].to_vec();
-    //         bezier(&draw, &model, control_points);
-    //         start_index += 3;
-    //         end_index += 3;
-    //     }
-    // }  // 4 + 3n points
-    // // Draw the lines
-    // model.b_lines.iter().for_each(|(start, end)| {
-    //     draw.line().start(*start).end(*end).weight(0.5).color(WHITE);
-    // });
+    // add a line for each edge
+    edges.iter().for_each(|(start, end)| {draw.line()
+        .start(model.control_points[*start].into())
+        .end(model.control_points[*end].into())
+        .color(WHITE);
+    });
 
-    // Draw the points
-    // model.points.iter().for_each(|point| {draw.ellipse().xy(*point).radius(5.0).color(BLUEVIOLET);});
-
-    let scale = 1.0;
-    draw.polygon().points(
-        model.control_points[0].iter().map(|(x, y)| pt2(x*scale, y*scale))
-        ).color(WHITE);
+    // * Draw Vertices
+    model.control_points.iter().for_each(|point| {draw.ellipse().color(BLUE).w_h(10.0, 10.0).x_y(point.x, point.y);});
 
     draw.to_frame(app, &frame).unwrap();  //* Draw all the elements above to the frame...
 }
@@ -139,8 +127,9 @@ fn load_icon(icon_path: &str) -> Result<Icon, Box<dyn std::error::Error>> {
 
 fn handle_mouse_event(app: &App, model: &mut Model) {
     let mouse_pos = app.mouse.position();
+    let n_vec = Vec3::new(mouse_pos.x, mouse_pos.y, 0.0);
     println!("Mouse position: {:?}", mouse_pos);  // Debugging print statement
-    model.points.push(mouse_pos);  // Add the point to the points vector
+    model.points.push(n_vec);  // Add the point to the points vector
 }
 
 fn handle_key_event(
@@ -160,129 +149,120 @@ fn handle_key_event(
         // F to full screen
         Key::F => {
             let window = app.main_window();
-            match window.is_fullscreen() {
-                true => window.set_fullscreen(false),
-                false => window.set_fullscreen(true),
-            }
+            window.set_fullscreen(!window.is_fullscreen());
         }
 
-        // * Move the control points
-        Key::Up => model.control_points.iter_mut().for_each(|row| row.iter_mut().for_each(|(_, y)| *y += 10.0)),
-        Key::Down => model.control_points.iter_mut().for_each(|row| row.iter_mut().for_each(|(_, y)| *y -= 10.0)),
-        Key::Left => model.control_points.iter_mut().for_each(|row| row.iter_mut().for_each(|(x, _)| *x -= 10.0)),
-        Key::Right => model.control_points.iter_mut().for_each(|row| row.iter_mut().for_each(|(x, _)| *x += 10.0)),
+        // * Move
+        // move over x & y axis
+        Key::Up => model.control_points.iter_mut().for_each(|point| point.y += 10.0),  // move up
+        Key::Down => model.control_points.iter_mut().for_each(|point| point.y -= 10.0),  // move down
+        Key::Left => model.control_points.iter_mut().for_each(|point| point.x -= 10.0),  // move left
+        Key::Right => model.control_points.iter_mut().for_each(|point| point.x += 10.0),  // move right
 
-        // * Scale the control points
+        // * Rotate
+        Key::U => rotate(&mut model.control_points, 10.0, 'x'),  // Rotate up
+        Key::D => rotate(&mut model.control_points, -10.0, 'x'),  // Rotate down
+        Key::L => rotate(&mut model.control_points, 10.0, 'y'),  // Rotate right
+        Key::R => rotate(&mut model.control_points, -10.0, 'y'),  // Rotate left
+        Key::I => rotate(&mut model.control_points, 10.0, 'z'),  // Rotate in
+        Key::O => rotate(&mut model.control_points, -10.0, 'z'),  // Rotate out
+
+        // * Scale
         // ^ Scale up by 10% (maintain aspect ratio) 
-        Key::Equals => scale_control_points(&mut model.control_points, 1.1), // Scale up by 10%
-        Key::Minus => scale_control_points(&mut model.control_points, 0.9), // Scale down by 10%
-        // ^ Scale up by 10px (does not maintain aspect ratio)
-        Key::W => scale_control_points_axis(&mut model.control_points, 1.1, 'y'), // Scale up Y axis
-        Key::S => scale_control_points_axis(&mut model.control_points, 0.9, 'y'), // Scale down Y axis
-        Key::A => scale_control_points_axis(&mut model.control_points, 0.9, 'x'), // Scale down X axis
-        Key::D => scale_control_points_axis(&mut model.control_points, 1.1, 'x'), // Scale up X axis
+        Key::Equals => scale(&mut model.control_points, 1.1),  // Scale up by 10%
+        Key::Minus => scale(&mut model.control_points, 0.9),  // Scale down by 10%
+        // ^ Scale up by 10% (does not maintain aspect ratio)
+        Key::X | Key::Y | Key::Z => {
+            let axis = match key_code {
+                Key::X => 'x',
+                Key::Y => 'y',
+                Key::Z => 'z',
+                _ => unreachable!(), // This shouldn't happen
+            };
+            scale_axis(model.control_points.as_mut(), if app.keys.mods.shift() {0.9} else {1.1}, axis);
+        },
+        
+        // * Reset
+        Key::R => {
+            model.control_points = vec![
+                Vec3::new(-1.0, -1.0, -1.0), // 0 (bottom, back, left)
+                Vec3::new(-1.0,  1.0, -1.0), // 1 (top, back, left)
+                Vec3::new( 1.0,  1.0, -1.0), // 2 (top, back, right)
+                Vec3::new( 1.0, -1.0, -1.0), // 3 (bottom, back, right)
+                Vec3::new(-1.0, -1.0,  1.0), // 4 (bottom, front, left)
+                Vec3::new(-1.0,  1.0,  1.0), // 5 (top, front, left)
+                Vec3::new( 1.0,  1.0,  1.0), // 6 (top, front, right)
+                Vec3::new( 1.0, -1.0,  1.0), // 7 (bottom, front, right)
+            ];
+            model.control_points.iter_mut().for_each(|row| {
+                *row *= 300.0;
+            });
+        }
 
-        // * Rotate the control points
-        Key::L => rotate_control_points(&mut model.control_points,  3.0),
-        Key::R => rotate_control_points(&mut model.control_points, -3.0),
 
         _ => {println!("No action for key: {:?}", key_code);}
     }
 }
 
 
-fn rotate_control_points(control_points: &mut Vec<Vec<(f32, f32)>>, angle_degrees: f32) {
+fn rotate(
+    control_points: &mut Vec<Point3>,
+    angle_degrees: f32,
+    axis: char
+) {
     // Calculate the center of the control points
-    let mut center = (0.0, 0.0);
-    let total_points = (control_points.len() * control_points[0].len()) as f32;
-    for row in control_points.iter() {
-        for &(x, y) in row.iter() {
-            center.0 += x;
-            center.1 += y;
-        }
-    }
-    center.0 /= total_points;
-    center.1 /= total_points;
+    let mut center = Point3::new(0.0, 0.0, 0.0);
+    control_points.iter_mut().for_each(|point| center += *point);
+
+    center /= control_points.len() as f32;
 
     // Convert angle to radians
-    let angle_radians = angle_degrees.to_radians();
-    let cos_theta = angle_radians.cos();
-    let sin_theta = angle_radians.sin();
+    let angle_radians: f32 = angle_degrees.to_radians();
+    let cos_theta: f32 = angle_radians.cos();
+    let sin_theta: f32 = angle_radians.sin();
 
     // Apply the rotation to each control point
-    for row in control_points.iter_mut() {
-        for (x, y) in row.iter_mut() {
-            let translated_x = *x - center.0;
-            let translated_y = *y - center.1;
+    for point in control_points.iter_mut() {
+        let translated_point = *point - center;
+        let rotated_point = match axis {
+            'x' => Point3::new(
+                translated_point.x,
+                translated_point.y * cos_theta - translated_point.z * sin_theta,
+                translated_point.y * sin_theta + translated_point.z * cos_theta,
+            ),
+            'y' => Point3::new(
+                translated_point.x * cos_theta + translated_point.z * sin_theta,
+                translated_point.y,
+                -translated_point.x * sin_theta + translated_point.z * cos_theta,
+            ),
+            'z' => Point3::new(
+                translated_point.x * cos_theta - translated_point.y * sin_theta,
+                translated_point.x * sin_theta + translated_point.y * cos_theta,
+                translated_point.z,
+            ),
+            _ => Point3::new(0.0, 0.0, 0.0),
+        };
 
-            let rotated_x = translated_x * cos_theta - translated_y * sin_theta;
-            let rotated_y = translated_x * sin_theta + translated_y * cos_theta;
-
-            *x = rotated_x + center.0;
-            *y = rotated_y + center.1;
-        }
+        *point = rotated_point + center;
     }
 }
 
-
-fn scale_control_points(control_points: &mut Vec<Vec<(f32, f32)>>, scale_factor: f32) {
-    // Calculate the center of the control points
-    let mut center = (0.0, 0.0);
-    let total_points = (control_points.len() * control_points[0].len()) as f32;
-    for row in control_points.iter() {
-        for &(x, y) in row.iter() {
-            center.0 += x;
-            center.1 += y;
-        }
-    }
-    center.0 /= total_points;
-    center.1 /= total_points;
-
-    // Apply the scaling to each control point
-    for row in control_points.iter_mut() {
-        for (x, y) in row.iter_mut() {
-            let translated_x = *x - center.0;
-            let translated_y = *y - center.1;
-
-            let scaled_x = translated_x * scale_factor;
-            let scaled_y = translated_y * scale_factor;
-
-            *x = scaled_x + center.0;
-            *y = scaled_y + center.1;
-        }
-    }
+fn scale(
+    control_points: &mut Vec<Point3>,
+    scale_factor: f32
+) {
+    control_points.iter_mut().for_each(|point| *point *= scale_factor);
 }
 
-
-fn scale_control_points_axis(control_points: &mut Vec<Vec<(f32, f32)>>, scale_factor: f32, axis: char) {
-    // Calculate the center of the control points
-    let mut center = (0.0, 0.0);
-    let total_points = (control_points.len() * control_points[0].len()) as f32;
-    for row in control_points.iter() {
-        for &(x, y) in row.iter() {
-            center.0 += x;
-            center.1 += y;
-        }
-    }
-    center.0 /= total_points;
-    center.1 /= total_points;
-
-    // Apply the scaling to each control point along the specified axis
-    for row in control_points.iter_mut() {
-        for (x, y) in row.iter_mut() {
-            match axis {
-                'x' => {
-                    let translated_x = *x - center.0;
-                    let scaled_x = translated_x * scale_factor;
-                    *x = scaled_x + center.0;
-                }
-                'y' => {
-                    let translated_y = *y - center.1;
-                    let scaled_y = translated_y * scale_factor;
-                    *y = scaled_y + center.1;
-                }
-                _ => {}
-            }
-        }
-    }
+fn scale_axis(
+    control_points: &mut Vec<Point3>,
+    scale_factor: f32,
+    axis: char
+) {
+    control_points.iter_mut().for_each(|point| match axis {
+        'x' => point.x *= scale_factor,
+        'y' => point.y *= scale_factor,
+        'z' => point.z *= scale_factor,
+        _ => (),
+    });
 }
