@@ -1,14 +1,12 @@
 // use nannou::{
 //     prelude::*,
-//     color, 
+//     color,
 // };
-
 
 // use crate::{
 //     geometry::n_cube::Hypercube,
 //     util::lorem::lorem
 // };
-
 
 // pub fn nannou_test() {
 //     // nannou::sketch(view).run();
@@ -32,7 +30,7 @@
 //         .unwrap()
 //         ;
 
-//         Model { 
+//         Model {
 //             // _window,
 //             last_point: pt2(0.0, 0.0)
 //         }
@@ -51,32 +49,28 @@
 //     // aux
 //     let r = app.window_rect();
 //     let t = app.time;
-    
+
 //     // * Drawings
 //     // vec_field(app, &draw);
 //     // draw_square(app, &draw, r);
 //     // n_size_polygon(app, &draw);
 //     // some_example(app, frame);
 
-
 //     // create a loop of 2 lines that follow the mouse
 //     // let start = pt2(0.0, 0.0);
 //     // draw.line().start(start).end(pt2(app.mouse.x, app.mouse.y)).color(RED);
 //     // draw.line().start(start).end(pt2(-app.mouse.x, -app.mouse.y)).color(WHITE);
-    
+
 //     // draw_vec_space_gizmo(app, &draw);
 //     // draw_origin(app, &draw);
-    
+
 //     // test_camera(app, &draw);
 
 //     draw_lines(app, &draw);
 
-
-
 //     // * Write the result of the drawing to the window's frame
 //     draw.to_frame(app, &frame).unwrap();
 // }
-
 
 // fn draw_lines(app: &App, draw: &Draw, model: &mut Model) {
 //     let r = app.window_rect();
@@ -100,17 +94,6 @@
 //         model.last_point = pt2(app.mouse.x, app.mouse.y);
 //     }
 // }
-
-
-
-
-
-
-
-
-
-
-
 
 // // * TESTING ELEMENTS (?)
 // fn draw_origin(app: &App, draw: &Draw) {
@@ -288,4 +271,3 @@
 //     // Write the result of our drawing to the window's frame.
 //     draw.to_frame(app, &frame).unwrap();
 // }
-

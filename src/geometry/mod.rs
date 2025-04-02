@@ -1,1 +1,1 @@
-pub mod n_cube;
+pub mod hypercube;

@@ -1,25 +1,16 @@
 //! This handles all possible unused warnings (but it's a little overkill, so you can remove it if you want to see all the warnings)
 #![allow(unused)]
 
-
 // todo: Improve the dev_utils using something like: `use dev_utils::prelude::*;`
-// * `dev_utils::prelude::*` cause it will be easier to use all the functions from the prelude 
-use dev_utils::{
-    print_app_data,
-    log::rlog::RLog,
-};
+// * `dev_utils::prelude::*` cause it will be easier to use all the functions from the prelude
+use dev_utils::{log::rlog::RLog, print_app_data};
 use log::{info, LevelFilter};
 
 use rubix_realm::{
     init_window,
     math::polynomial_eval::*,
-    math::{
-        Matrix,
-        Point,
-        surface::*,
-    },
+    math::{surface::*, Matrix, Point},
 };
-
 
 fn main() {
     // * Initialize the logger

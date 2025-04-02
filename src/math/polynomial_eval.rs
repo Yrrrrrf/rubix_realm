@@ -1,9 +1,11 @@
 #![allow(dead_code)]
 
-
 pub fn horner(coefficients: &[f64], x: f64) -> f64 {
-    let mut result = coefficients[0];  // The first coefficient is the highest power
-    coefficients.iter().skip(1).for_each(|&coefficient| result = result * x + coefficient);
+    let mut result = coefficients[0]; // The first coefficient is the highest power
+    coefficients
+        .iter()
+        .skip(1)
+        .for_each(|&coefficient| result = result * x + coefficient);
     result
 }
 
@@ -62,11 +64,14 @@ impl Point {
     }
 }
 
-
-
-
-pub fn eval_polynomial(method: fn(&[f64], f64) -> f64, coefficients: &[f64], min: f64, max: f64, step: f64) {
-    (0..((max - min) / step) as u32 + 1).map(|i| min + i as f64 * step)
-        .for_each(|x| println!("f({x:.2}) = {:.4}", method(&coefficients, x))
-    );
+pub fn eval_polynomial(
+    method: fn(&[f64], f64) -> f64,
+    coefficients: &[f64],
+    min: f64,
+    max: f64,
+    step: f64,
+) {
+    (0..((max - min) / step) as u32 + 1)
+        .map(|i| min + i as f64 * step)
+        .for_each(|x| println!("f({x:.2}) = {:.4}", method(&coefficients, x)));
 }

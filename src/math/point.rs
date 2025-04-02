@@ -1,6 +1,5 @@
-// 
+//
 #![allow(unused)]
-
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Point {
@@ -17,11 +16,20 @@ impl Point {
     }
 
     pub fn distance(&self, other: &Point) -> f64 {
-        self.data.iter().zip(other.data.iter()).map(|(a, b)| (a - b).powi(2)).sum::<f64>().sqrt()
+        self.data
+            .iter()
+            .zip(other.data.iter())
+            .map(|(a, b)| (a - b).powi(2))
+            .sum::<f64>()
+            .sqrt()
     }
 
     pub fn dot(&self, other: &Point) -> f64 {
-        self.data.iter().zip(other.data.iter()).map(|(a, b)| a * b).sum()
+        self.data
+            .iter()
+            .zip(other.data.iter())
+            .map(|(a, b)| a * b)
+            .sum()
     }
 
     pub fn magnitude(&self) -> f64 {
@@ -40,11 +48,11 @@ impl Point {
     pub fn scale(&self, scalar: f64) -> Point {
         Point::new(self.data.iter().map(|x| x * scalar).collect())
     }
-    
+
     pub fn angle(&self, other: &Point) -> f64 {
         self.dot(other) / (self.magnitude() * other.magnitude()).acos()
     }
-    
+
     // pub fn project(&self, other: &Point) -> Point {
     //     other.scale(self.dot(other) / other.magnitude_squared())
     // }
@@ -73,20 +81,21 @@ impl Point {
     //     }
     //     Point::new(result)
     // }
-
 }
 
-
-
-
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
-
 
 impl Add for Point {
     type Output = Point;
 
     fn add(self, other: Point) -> Point {
-        Point::new(self.data.iter().zip(other.data.iter()).map(|(a, b)| a + b).collect())
+        Point::new(
+            self.data
+                .iter()
+                .zip(other.data.iter())
+                .map(|(a, b)| a + b)
+                .collect(),
+        )
     }
 }
 
@@ -100,7 +109,13 @@ impl Sub for Point {
     type Output = Point;
 
     fn sub(self, other: Point) -> Point {
-        Point::new(self.data.iter().zip(other.data.iter()).map(|(a, b)| a - b).collect())
+        Point::new(
+            self.data
+                .iter()
+                .zip(other.data.iter())
+                .map(|(a, b)| a - b)
+                .collect(),
+        )
     }
 }
 
@@ -158,7 +173,13 @@ impl Mul<Point> for Point {
     type Output = Point;
 
     fn mul(self, other: Point) -> Point {
-        Point::new(self.data.iter().zip(other.data.iter()).map(|(a, b)| a * b).collect())
+        Point::new(
+            self.data
+                .iter()
+                .zip(other.data.iter())
+                .map(|(a, b)| a * b)
+                .collect(),
+        )
     }
 }
 
@@ -172,7 +193,13 @@ impl Div<Point> for Point {
     type Output = Point;
 
     fn div(self, other: Point) -> Point {
-        Point::new(self.data.iter().zip(other.data.iter()).map(|(a, b)| a / b).collect())
+        Point::new(
+            self.data
+                .iter()
+                .zip(other.data.iter())
+                .map(|(a, b)| a / b)
+                .collect(),
+        )
     }
 }
 

@@ -45,11 +45,20 @@ pub fn bezier_surface(control_points: &Vec<Vec<Point>>, u: f64, v: f64) -> Point
     temp_points[0][0]
 }
 
-pub fn nurbs_surface(control_points: &Vec<Vec<Point>>, weights: &Vec<Vec<f64>>, u: f64, v: f64) -> Point {
+pub fn nurbs_surface(
+    control_points: &Vec<Vec<Point>>,
+    weights: &Vec<Vec<f64>>,
+    u: f64,
+    v: f64,
+) -> Point {
     let n = control_points.len() - 1;
     let m = control_points[0].len() - 1;
 
-    let mut numerator = Point { x: 0.0, y: 0.0, z: 0.0 };
+    let mut numerator = Point {
+        x: 0.0,
+        y: 0.0,
+        z: 0.0,
+    };
     let mut denominator = 0.0;
 
     for i in 0..=n {
